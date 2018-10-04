@@ -38,7 +38,6 @@ def verify():
 def webhook():
 
     data = request.get_json()
-    log(data)
 
     if data["object"] == "page":
 
@@ -50,6 +49,7 @@ def webhook():
                     recipient_id = messaging_event["recipient"][
                         "id"]
                     message_text = messaging_event["message"]["text"]
+                    app.logger.info("Sender id:", sender_id, "Message", message_text)
 
                     send_message(sender_id, "roger that!")
 
@@ -57,7 +57,7 @@ def webhook():
 
 
 def send_message(recipient_id, message_text):
-    log("sending message to {recipient}: {text}".format(recipient=recipient_id, text=message_text))
+    # log("sending message to {recipient}: {text}".format(recipient=recipient_id, text=message_text))
 
     params = {
         "access_token": os.environ["PAGE_ACCESS_TOKEN"]
@@ -75,20 +75,20 @@ def send_message(recipient_id, message_text):
     })
     r = requests.post("https://graph.facebook.com/v2.6/me/messages", params=params, headers=headers, data=data)
     if r.status_code != 200:
-        log(r.status_code)
-        log(r.text)
+        app.logger.info((r.status_code))
+        app.logger.err(r.text)
 
 
-def log(msg, *args, **kwargs):  # simple wrapper for logging to stdout on heroku
-    try:
-        if type(msg) is dict:
-            msg = json.dumps(msg)
-        else:
-            msg = msg.format(*args, **kwargs)
-        print(u"{}: {}".format(datetime.now(), msg))
-    except UnicodeEncodeError:
-        pass  # squash logging errors in case of non-ascii text
-    sys.stdout.flush()
+# def log(msg, *args, **kwargs):  # simple wrapper for logging to stdout on heroku
+#     try:
+#         if type(msg) is dict:
+#             msg = json.dumps(msg)
+#         else:
+#             msg = msg.format(*args, **kwargs)
+#         print(u"{}: {}".format(datetime.now(), msg))
+#     except UnicodeEncodeError:
+#         pass  # squash logging errors in case of non-ascii text
+#     sys.stdout.flush()
 
 
 if __name__ == '__main__':
