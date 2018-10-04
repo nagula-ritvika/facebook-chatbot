@@ -15,18 +15,13 @@ app = Flask(__name__)
 
 @app.route('/')
 def hello():
-    # return "Hello World!"
-    app.logger.debug("this is a DEBUG message")
-    app.logger.info("this is an INFO message")
-    app.logger.warning("this is a WARNING message")
-    app.logger.error("this is an ERROR message")
-    app.logger.critical("this is a CRITICAL message")
-    print("HELLLOOOOOOOO")
+    app.logger.info("someone hit the base endpoint")
+    return "Hello World!"
 
-    return PAGE_ACCESS_TOKEN
 
 @app.route('/privacy')
 def privacy_policy():
+    app.logger.info("someone hit the privacy policy endpoint")
     return """<head> <title>Privacy Policy</title> </head> <body> <h2>The Good Reader Privacy Policy</h2> <p 
     style="font-size: 18px">This app 
     is built for educational purposes and does not collect any data or personal information of the user. This app is 
@@ -37,9 +32,11 @@ def privacy_policy():
 def verify():
     if request.args.get("hub.mode") == "subscribe" and request.args.get("hub.challenge"):
         if not request.args.get("hub.verify_token") == os.environ["VERIFY_TOKEN"]:
+            app.logger.warning("Invalid verification token")
             return "Invalid Verification Token", 403
+        app.logger.info("Returned verification token")
         return request.args["hub.challenge"], 200
-
+    app.logger.info("No verification token received")
     return "Hello World !!", 200
 
 
@@ -58,8 +55,7 @@ def webhook():
                     recipient_id = messaging_event["recipient"][
                         "id"]
                     message_text = messaging_event["message"]["text"]
-                    log("GOT MESSAGE")
-
+                    app.logger.info("Received a message from sender id {} saying {}".format(sender_id, message_text))
                     send_message(sender_id, "roger that!")
 
     return "ok", 200
@@ -84,8 +80,8 @@ def send_message(recipient_id, message_text):
     })
     r = requests.post("https://graph.facebook.com/v2.6/me/messages", params=params, headers=headers, data=data)
     if r.status_code != 200:
-        log(r.status_code)
-        log(r.text)
+        app.logger.info(r.status_code)
+        app.logger.info(r.text)
 
 
 def log(msg, *args, **kwargs):  # simple wrapper for logging to stdout on heroku
@@ -101,9 +97,4 @@ def log(msg, *args, **kwargs):  # simple wrapper for logging to stdout on heroku
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
-
-
-
-# $ export FLASK_APP = hello.py
-# $ flask run
+    app.run()
