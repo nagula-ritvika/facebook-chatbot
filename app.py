@@ -16,13 +16,16 @@ app = Flask(__name__)
 
 @app.route('/')
 def hello():
-    app.logger.info("someone hit the base endpoint")
+    print("someone hit the base endpoint")
+    sys.stdout.flush()
     return "Hello World!", 200
 
 
 @app.route('/privacy')
 def privacy_policy():
-    app.logger.info("someone hit the privacy policy endpoint")
+    print("someone hit the privacy policy endpoint")
+    sys.stdout.flush()
+
     return """<head> <title>Privacy Policy</title> </head> <body> <h2>The Good Reader Privacy Policy</h2> <p 
     style="font-size: 18px">This app 
     is built for educational purposes and does not collect any data or personal information of the user. This app is 
@@ -56,7 +59,9 @@ def webhook():
                     recipient_id = messaging_event["recipient"][
                         "id"]
                     message_text = messaging_event["message"]["text"]
-                    app.logger.info("Received a message from sender id {} saying {}".format(sender_id, message_text))
+                    print("Received a message from sender id {} saying {}".format(sender_id, message_text))
+                    sys.stdout.flush()
+
                     send_message(sender_id, "roger that!")
 
     return "ok", 200
@@ -81,8 +86,9 @@ def send_message(recipient_id, message_text):
     })
     r = requests.post("https://graph.facebook.com/v2.6/me/messages", params=params, headers=headers, data=data)
     if r.status_code != 200:
-        app.logger.info(r.status_code)
-        app.logger.info(r.text)
+        print(r.status_code)
+        print(r.text)
+        sys.stdout.flush()
 
 
 def log(msg, *args, **kwargs):  # simple wrapper for logging to stdout on heroku
@@ -98,7 +104,9 @@ def log(msg, *args, **kwargs):  # simple wrapper for logging to stdout on heroku
 
 
 if __name__ == '__main__':
-    gunicorn_logger = logging.getLogger('gunicorn.error')
-    app.logger.handlers = gunicorn_logger.handlers
-    app.logger.setLevel(gunicorn_logger.level)
+    # gunicorn_logger = logging.getLogger('gunicorn.error')
+    # app.logger.handlers = gunicorn_logger.handlers
+    # app.logger.setLevel(gunicorn_logger.level)
+    app.logger.addHandler(logging.StreamHandler(sys.stdout))
+    app.logger.setLevel(logging.DEBUG)
     app.run()
