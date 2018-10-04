@@ -6,6 +6,7 @@ import sys
 
 import requests
 from flask import Flask, request
+import logging
 import os
 
 PAGE_ACCESS_TOKEN = os.environ["PAGE_ACCESS_TOKEN"]
@@ -16,7 +17,7 @@ app = Flask(__name__)
 @app.route('/')
 def hello():
     app.logger.info("someone hit the base endpoint")
-    return "Hello World!"
+    return "Hello World!", 200
 
 
 @app.route('/privacy')
@@ -97,4 +98,7 @@ def log(msg, *args, **kwargs):  # simple wrapper for logging to stdout on heroku
 
 
 if __name__ == '__main__':
+    gunicorn_logger = logging.getLogger('gunicorn.error')
+    app.logger.handlers = gunicorn_logger.handlers
+    app.logger.setLevel(gunicorn_logger.level)
     app.run()
