@@ -12,11 +12,16 @@ import xmltodict
 
 from datetime import datetime
 from flask import Flask, request
-from xml.etree import ElementTree
 
 PAGE_ACCESS_TOKEN = os.environ["PAGE_ACCESS_TOKEN"]
 VERIFY_TOKEN = os.environ["VERIFY_TOKEN"]
 GOODREADS_KEY = os.environ["GOODREADS_API_KEY"]
+
+GREETING_INPUTS = ['hi', 'hey', 'hello', 'ssup', 'sup', "what's up", 'heyy', 'greetings', 'there']
+GREETING_RESPONSES = ['Hi there!', 'Hello', 'Hi', 'Happy to help you!', 'Hey there!', 'Hey']
+ERROR_MSG = 'I am sorry, I cannot seem to understand what you are saying'
+INTRO_MSG = 'Hello there! I am a chatbot who can look up book details and author details for you from the Goodreads ' \
+            'website. You can use <#author author_name> or <#book book_title> to search.'
 
 app = Flask(__name__)
 
@@ -67,10 +72,12 @@ def receive_message():
                     for word in message_text.split():
                         if word.lower() in GREETING_INPUTS:
                             send_message(sender_id, random.choice(GREETING_RESPONSES))
+                            send_message(sender_id, INTRO_MSG)
                             return "ok", 200
 
                     if re.search('^#', message_text) is None:
                         send_message(sender_id, ERROR_MSG)
+                        send_message(sender_id, INTRO_MSG)
                         return "ok", 200
 
                     if '#author' in message_text:
@@ -103,11 +110,6 @@ def send_message(recipient_id, message_text):
     if r.status_code != 200:
         log(r.status_code)
         log(r.text)
-
-
-GREETING_INPUTS = ['hi', 'hey', 'hello', 'ssup', 'sup', "what's up", 'heyy', 'greetings', 'there']
-GREETING_RESPONSES = ['Hi there!', 'Hello', 'Hi', 'Happy to help you!', 'Hey there!', 'Hey']
-ERROR_MSG = 'I am sorry, I cannot seem to understand what you are saying'
 
 
 def get_author_details(sender_id, message_text):
