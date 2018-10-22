@@ -1,1 +1,1 @@
-# facebook-chatbot-trial
+# facebook-chatbot integrated with Goodreads API
